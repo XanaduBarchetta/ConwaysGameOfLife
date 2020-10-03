@@ -10,7 +10,8 @@ HEIGHT = ROWS * (CELL_SIZE + PADDING) + PADDING
 BG_COLOR = color_rgb(50, 50, 50)
 DEAD_COLOR = color_rgb(0, 0, 0)
 LIVE_COLOR = color_rgb(245, 245, 0)  # cadmium yellow
-SLEEP_TIME = 0.1  # Duration in seconds between each iteration
+SLEEP_TIME = 0.01  # Duration in seconds between each iteration
+STATUS_BAR_HEIGHT = 20
 
 
 class Cell:
@@ -95,7 +96,7 @@ class Grid:
 
 
 def main(initial_grid=None):
-    win = GraphWin("Conway's Game of Life", WIDTH, HEIGHT)
+    win = GraphWin("Conway's Game of Life", WIDTH, HEIGHT + STATUS_BAR_HEIGHT)
     win.setBackground(BG_COLOR)
     grid = Grid(ROWS, COLS, win)
 
@@ -103,8 +104,21 @@ def main(initial_grid=None):
         for (x, y) in initial_grid:
             grid.activate(x, y)
 
-    while win.checkMouse() is None:
-        time.sleep(SLEEP_TIME)
-        grid.iterate()
+    state = "paused"
+
+    status_bar = Text(Point(WIDTH/2, HEIGHT+(STATUS_BAR_HEIGHT/2)), f"Game is {state}.")
+    status_bar.setTextColor('white')
+    status_bar.setSize(12)
+    status_bar.draw(win)
+
+    while True:
+        if state == "playing":
+            time.sleep(SLEEP_TIME)
+            grid.iterate()
+        if win.checkKey() == 'space':
+            state = "playing" if state == "paused" else "paused"
+            status_bar.setText(f"Game is {state}.")
+        elif win.checkKey() == 'q':
+            break
 
     win.close()
